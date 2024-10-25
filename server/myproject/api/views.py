@@ -45,9 +45,8 @@ def login(request):
     print(f'Password is correct: {is_correct}')  # Debugging
 
     if is_correct:
-        return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Login successful', 'email': user.email}, status=status.HTTP_200_OK)
     else:
-        print('Authentication failed')  # Debugging
         return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
