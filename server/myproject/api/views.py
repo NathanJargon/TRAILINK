@@ -2,14 +2,10 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .models import User  # Ensure this is your custom user model
-from .serializer import UserSerializer
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from .models import User, Admin  # Ensure this includes your Admin model
+from .serializer import UserSerializer, AdminSerializer
+from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.permissions import AllowAny  # Import AllowAny
-from django.contrib.auth.hashers import check_password
 
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Allow any user
@@ -49,6 +45,28 @@ def login(request):
     else:
         return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def admin_login(request):
+    username = request.data.get('username').strip()
+    password = request.data.get('password').strip()
+
+    print(f'Attempting admin login with username: {username}, password: {password}')  # Debugging
+
+    try:
+        admin = Admin.objects.get(username=username)
+    except Admin.DoesNotExist:
+        print('Admin does not exist')  # Debugging
+        return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Manually check the password
+    is_correct = check_password(password, admin.password)
+    print(f'Password is correct: {is_correct}')  # Debugging
+
+    if is_correct:
+        return Response({'message': 'Login successful', 'email': admin.email}, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Allow any user
